@@ -325,6 +325,8 @@ let lastResult = null;
 function show(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  // หน้าผลลัพธ์ไม่ต้องแสดง header
+  document.querySelector(".hero").style.display = (id === "screen-result") ? "none" : "";
   window.scrollTo({top:0, behavior:"smooth"});
 }
 function startQuiz(){
