@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบทดสอบบุคลิกภาพ DISC — คุณเป็นคนแบบไหน?</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+    --primary:#5b6ef5; --primary-dark:#4557e0;
+    --d:#e05252; --i:#f2a93b; --s:#4caf7d; --c:#4a90d9;
+    --radius:16px; --shadow:0 4px 18px rgba(30,41,90,.08);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:'Prompt','Segoe UI',Tahoma,sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; display:flex; justify-content:center;
+    padding:16px;
+  }
+  .app{width:100%; max-width:560px;}
+  .screen{display:none; animation:fade .35s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+  /* ---------- หน้าแรก ---------- */
+  .hero{
+    background:linear-gradient(135deg,#5b6ef5,#8b5cf6);
+    color:#fff; border-radius:var(--radius); padding:32px 28px;
+    text-align:center; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .hero .animals{font-size:40px; letter-spacing:6px; margin-bottom:10px;}
+  .hero h1{font-size:24px; font-weight:700; margin-bottom:6px;}
+  .hero p{font-size:14.5px; opacity:.92; font-weight:300;}
+  .card{
+    background:var(--card); border-radius:var(--radius);
+    padding:22px; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .card h2{font-size:17px; margin-bottom:12px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:14px; font-weight:500; margin-bottom:6px;}
+  .field label .req{color:#e05252;}
+  .field input{
+    width:100%; padding:12px 14px; border-radius:12px;
+    border:1.5px solid #dde1f0; background:#f8f9fe;
+    font-family:inherit; font-size:15.5px; color:var(--text);
+    outline:none; transition:.15s;
+  }
+  .field input:focus{border-color:var(--primary); background:#fff;}
+  .rule{display:flex; align-items:center; gap:12px; padding:7px 0; font-size:15px;}
+  .rule .badge{
+    width:34px; height:34px; border-radius:10px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:600; color:#fff; font-size:16px;
+  }
+  .b4{background:#4caf7d;} .b3{background:#8bc34a;} .b2{background:#f2a93b;} .b1{background:#e05252;}
+  .note{font-size:13px; color:var(--muted); margin-top:10px; line-height:1.6;}
+  .err{font-size:13px; color:#e05252; margin-top:6px; display:none;}
+  .btn{
+    display:block; width:100%; border:none; cursor:pointer;
+    background:var(--primary); color:#fff;
+    font-family:inherit; font-size:17px; font-weight:600;
+    padding:15px; border-radius:14px; transition:.2s;
+    box-shadow:0 4px 14px rgba(91,110,245,.35);
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn:disabled{background:#c3c9e8; box-shadow:none; cursor:not-allowed;}
+  .btn.ghost{
+    background:transparent; color:var(--muted); box-shadow:none;
+    font-weight:400; font-size:15px; padding:10px;
+  }
+  .btn.ghost:hover{color:var(--text);}
+  .btn.outline{
+    background:#fff; color:var(--primary); border:1.5px solid var(--primary);
+    box-shadow:none;
+  }
+  .btn.outline:hover{background:#f0f2ff;}
+
+  /* ---------- หน้าคำถาม ---------- */
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .qcount{font-size:14px; color:var(--muted); font-weight:500;}
+  .progress{height:8px; background:#e3e7f5; border-radius:99px; overflow:hidden; margin-bottom:18px;}
+  .progress .fill{height:100%; width:0; background:linear-gradient(90deg,#5b6ef5,#8b5cf6); border-radius:99px; transition:width .3s;}
+  .qtitle{font-size:15px; color:var(--muted); margin-bottom:14px; line-height:1.6;}
+  .stmt{
+    background:var(--card); border-radius:14px; padding:14px 16px;
+    box-shadow:var(--shadow); margin-bottom:12px;
+    display:flex; flex-direction:column; gap:10px;
+    border:2px solid transparent; transition:border .2s;
+  }
+  .stmt.done{border-color:#c9f0da;}
+  .stmt .text{font-size:15.5px; line-height:1.5;}
+  .scores{display:flex; gap:8px;}
+  .score-btn{
+    flex:1; padding:10px 0; border-radius:10px; border:1.5px solid #dde1f0;
+    background:#f8f9fe; font-family:inherit; font-size:16px; font-weight:600;
+    color:#7a819c; cursor:pointer; transition:.15s;
+  }
+  .score-btn:hover{border-color:var(--primary); color:var(--primary);}
+  .score-btn.selected{color:#fff; border-color:transparent;}
+  .score-btn.selected.v4{background:#4caf7d;}
+  .score-btn.selected.v3{background:#8bc34a;}
+  .score-btn.selected.v2{background:#f2a93b;}
+  .score-btn.selected.v1{background:#e05252;}
+  .nav{display:flex; gap:10px; margin-top:6px;}
+  .nav .btn{flex:1;}
+  .hint{text-align:center; font-size:13px; color:var(--muted); margin-top:12px;}
+
+  /* ---------- หน้าผลลัพธ์ ---------- */
+  .result-hero{
+    border-radius:var(--radius); padding:30px 24px; text-align:center;
+    color:#fff; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .result-hero .emoji{font-size:68px; line-height:1; margin-bottom:8px; display:block;}
+  .result-hero .label{font-size:14px; opacity:.85; font-weight:300;}
+  .result-hero h1{font-size:28px; font-weight:700; margin:4px 0;}
+  .result-hero .nick{font-size:15.5px; opacity:.92; font-weight:400;}
+  .who-box{
+    background:rgba(255,255,255,.16); border-radius:12px;
+    padding:10px 14px; margin-top:14px; font-size:14px; line-height:1.7;
+    text-align:left; display:inline-block;
+  }
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+  .bar-row .who{width:86px; font-size:14px; font-weight:500; flex:none;}
+  .bar-track{flex:1; height:26px; background:#eef0f9; border-radius:8px; overflow:hidden;}
+  .bar-fill{
+    height:100%; width:0; border-radius:8px;
+    display:flex; align-items:center; justify-content:flex-end;
+    padding-right:8px; color:#fff; font-size:13px; font-weight:600;
+    transition:width .8s cubic-bezier(.2,.8,.3,1); min-width:34px;
+  }
+  .desc-list{list-style:none;}
+  .desc-list li{
+    padding:5px 0 5px 26px; position:relative; font-size:15px; line-height:1.6;
+  }
+  .desc-list li::before{content:"✦"; position:absolute; left:4px; color:var(--primary);}
+  .tag{font-size:13px; font-weight:600; padding:3px 10px; border-radius:99px; color:#fff; display:inline-block; margin-bottom:8px;}
+  .sec-h{font-size:15px; margin:12px 0 4px; font-weight:600;}
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
+    background:#1f2937; color:#fff; font-size:14px; padding:11px 22px;
+    border-radius:99px; opacity:0; pointer-events:none; transition:.3s;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:99;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- พิมพ์ / บันทึก PDF ---------- */
+  @media print{
+    body{background:#fff; padding:0;}
+    .card,.result-hero{box-shadow:none; border:1px solid #ddd;}
+    .no-print{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ Header (แสดงทุกหน้า) ============ -->
+  <div class="hero">
+    <div class="animals">🐂 🦅 🐭 🐻</div>
+    <h1>แบบทดสอบบุคลิกภาพ DISC</h1>
+    <p>ค้นหาว่าคุณเป็นคนบุคลิกแบบไหน · ใช้เวลาเพียง 3–5 นาที<br>รู้จักสไตล์การทำงานและตัวตนของคุณมากขึ้น</p>
+  </div>
+
+  <!-- ============ หน้าแรก ============ -->
+  <div class="screen active" id="screen-start">
+    <div class="card">
+      <h2>👤 ข้อมูลผู้ทำแบบทดสอบ</h2>
+      <div class="field">
+        <label>ชื่อ-นามสกุล <span class="req">*</span></label>
+        <input type="text" id="inp-name" autocomplete="name">
+      </div>
+      <p class="err" id="name-err">⚠ กรุณากรอกชื่อ-นามสกุลก่อนเริ่มทำแบบทดสอบ</p>
+    </div>
+    <div class="card">
+      <h2>📋 วิธีทำแบบทดสอบ</h2>
+      <p style="font-size:15px; margin-bottom:12px; line-height:1.6;">
+        มีทั้งหมด <b>10 ข้อ</b> แต่ละข้อมี 4 ประโยค ให้ใส่คะแนน 1–4
+        โดย <b>ห้ามใช้เลขซ้ำกัน</b> ในข้อเดียวกัน
+      </p>
+      <div class="rule"><span class="badge b4">4</span> ใช่เรามากที่สุด</div>
+      <div class="rule"><span class="badge b3">3</span> ใช่เรา</div>
+      <div class="rule"><span class="badge b2">2</span> ใช่เราบ้างไม่ใช่บ้าง</div>
+      <div class="rule"><span class="badge b1">1</span> ไม่ใช่เราเลย</div>
+      <p class="note">💡 ตอบตามความเป็นจริงของตัวเอง ไม่มีคำตอบที่ถูกหรือผิด<br>ถ้าเผลอเลือกเลขที่ใช้ไปแล้ว ระบบจะย้ายเลขมาให้อัตโนมัติ</p>
+    </div>
+    <button class="btn" onclick="startQuiz()">เริ่มทำแบบทดสอบ ➜</button>
+  </div>
+
+  <!-- ============ หน้าคำถาม ============ -->
+  <div class="screen" id="screen-quiz">
+    <div class="topbar">
+      <span class="qcount" id="qcount">ข้อ 1 / 10</span>
+      <span class="qcount" id="qdone"></span>
+    </div>
+    <div class="progress"><div class="fill" id="progress-fill"></div></div>
+    <p class="qtitle">ให้คะแนน 4 = ใช่เรามากที่สุด → 1 = ไม่ใช่เราเลย (ห้ามซ้ำกัน)</p>
+    <div id="stmt-list"></div>
+    <div class="nav">
+      <button class="btn ghost" id="btn-back" onclick="prevQ()">← ย้อนกลับ</button>
+      <button class="btn" id="btn-next" onclick="nextQ()" disabled>ถัดไป ➜</button>
+    </div>
+    <p class="hint" id="hint">เลือกคะแนนให้ครบทั้ง 4 ประโยคก่อนนะ</p>
+  </div>
+
+  <!-- ============ หน้าผลลัพธ์ ============ -->
+  <div class="screen" id="screen-result">
+    <div class="result-hero" id="result-hero">
+      <span class="emoji" id="r-emoji"></span>
+      <span class="label">บุคลิกเด่นของคุณคือ…</span>
+      <h1 id="r-name"></h1>
+      <p class="nick" id="r-nick"></p>
+      <p class="nick" id="r-second" style="margin-top:10px; background:rgba(255,255,255,.18); display:inline-block; padding:6px 16px; border-radius:99px; font-size:14.5px;"></p>
+      <br>
+      <div class="who-box" id="who-box"></div>
+    </div>
+    <div class="card">
+      <h2>📊 คะแนนของคุณ</h2>
+      <div id="bars"></div>
+    </div>
+    <div class="card" id="desc-card"></div>
+    <div class="card no-print">
+      <h2>📤 แชร์ผลของคุณ</h2>
+      <p style="font-size:14px; color:var(--muted); margin-bottom:12px; line-height:1.6;">
+        กดปุ่มด้านล่างเพื่อคัดลอกผลสรุป แล้วส่งทาง Line หรืออีเมล
+        หรือพิมพ์/บันทึกเป็น PDF เก็บไว้ได้
+      </p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn outline" style="flex:1;" onclick="copySummary()">📋 คัดลอกผลสรุป</button>
+        <button class="btn outline" style="flex:1;" onclick="window.print()">🖨 พิมพ์ / PDF</button>
+      </div>
+    </div>
+    <div class="nav no-print">
+      <button class="btn ghost" onclick="backToQuiz()">← กลับไปแก้คำตอบ</button>
+      <button class="btn ghost" onclick="restart()">ทำแบบทดสอบใหม่ ↺</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast">คัดลอกผลสรุปแล้ว ✓</div>
+
+<script>
+/* ---------------- ข้อมูลคำถาม (จากแบบทดสอบ DISC ต้นฉบับ) ----------------
+   แต่ละประโยคผูกกับประเภทตาม "ตารางเฉลยท้ายกระดาษ" ของแบบทดสอบต้นฉบับ:
+   D=กระทิง, I=อินทรี, S=หนู, C=หมี
+   (ตรวจทวนกับตัวอย่างที่ทำจริงแล้ว: D=16, I=34, S=21, C=29 ตรงทุกคอลัมน์) */
+const QUESTIONS = [
+  [ {t:"ฉันชอบทำทุกอย่างให้ถูกต้อง", k:"C"},
+    {t:"ฉันเป็นคนง่าย ๆ ใจเย็น", k:"S"},
+    {t:"ฉันจะบอกคุณตรง ๆ ถ้าฉันไม่เห็นด้วย", k:"D"},
+    {t:"ฉันชอบทำอะไร ฮา ๆ", k:"I"} ],
+  [ {t:"ฉันชอบความสนุกสนาน", k:"I"},
+    {t:"ฉันชอบที่จะเป็นผู้นำ", k:"D"},
+    {t:"ฉันคุยไม่เก่ง", k:"C"},
+    {t:"ฉันฟังคนอื่นอย่างใจเย็น", k:"S"} ],
+  [ {t:"ฉันชอบอยู่กับคนมาก ๆ", k:"S"},
+    {t:"ฉันปรับตัวต่อการเปลี่ยนแปลงได้ง่าย", k:"C"},
+    {t:"ฉันไม่ใช่คนโกรธง่าย", k:"D"},
+    {t:"ฉันทำตามกฎได้ดี", k:"I"} ],
+  [ {t:"ฉันชอบแนะนำคนอื่นว่าต้องทำอะไร", k:"D"},
+    {t:"ฉันพูดมากกว่าฟัง", k:"I"},
+    {t:"ฉันตื่นเต้นง่ายกับทุกเรื่อง", k:"S"},
+    {t:"ฉันมักคิดก่อนพูด", k:"C"} ],
+  [ {t:"ฉันชอบช่วยเหลือผู้อื่น", k:"C"},
+    {t:"ฉันเก็บความรู้สึกได้ดี", k:"S"},
+    {t:"ฉันชอบทำตามที่คิด", k:"I"},
+    {t:"ฉันคุยกับคนง่าย", k:"D"} ],
+  [ {t:"ฉันยินดีที่จะทำตามคำสั่ง", k:"I"},
+    {t:"ฉันมักจะคิดถึงความรู้สึกคนอื่น", k:"D"},
+    {t:"ฉันทำทุกอย่างรวดเร็ว", k:"C"},
+    {t:"ฉันชอบพบปะผู้คน", k:"S"} ],
+  [ {t:"ฉันชอบการแข่งขัน", k:"D"},
+    {t:"ฉันเชื่อคนง่าย", k:"I"},
+    {t:"ฉันชอบให้คนอื่นเป็นผู้นำ", k:"S"},
+    {t:"ฉันวางแผนก่อนทำงาน", k:"C"} ],
+  [ {t:"ฉันชอบอะไรใหม่ ๆ และเป็นคนแรกเสมอ", k:"S"},
+    {t:"ฉันมองโลกในแง่ดี", k:"C"},
+    {t:"ฉันระวังตัวเสมอ", k:"D"},
+    {t:"ฉันชอบให้อธิบายรายละเอียด", k:"I"} ],
+  [ {t:"ฉันชอบทำทุกอย่างให้เรียบร้อย", k:"D"},
+    {t:"ฉันไม่ว่าต้องทำอะไรซ้ำ ๆ", k:"I"},
+    {t:"ฉันเป็นคนร่าเริง", k:"C"},
+    {t:"ฉันแก้ปัญหาเก่ง", k:"S"} ],
+  [ {t:"ฉันมีบุคลิกสดใสร่าเริง", k:"I"},
+    {t:"ฉันอดทนและเข้มแข็ง", k:"S"},
+    {t:"ฉันไม่ว่าถ้าคนอื่นจะทำตามฉัน", k:"D"},
+    {t:"ฉันชอบทำตามคำสั่ง", k:"C"} ],
+];
+
+/* ---------------- คำอธิบายผล (มุมมองการทำงาน) ---------------- */
+const TYPES = {
+  D:{ name:"กระทิง", emoji:"🐂", color:"#e05252", grad:"linear-gradient(135deg,#e05252,#c0392b)",
+      nick:"Dominance — นักลงมือทำ มุ่งผลลัพธ์",
+      work:["มุ่งเป้าหมาย ตัดสินใจเร็ว กล้าลงมือทำทันที","ตรงไปตรงมา ชอบความชัดเจน ไม่อ้อมค้อม","ชอบความท้าทาย แข่งขัน และแก้ปัญหาเฉพาะหน้าเก่ง","ทำงานภายใต้ความกดดันได้ดี"],
+      fit:["งานที่ต้องตัดสินใจและรับผิดชอบสูง","หัวหน้าทีม / งานที่มีเป้าหมายชัดเจน","งานที่ต้องแก้ปัญหาเร่งด่วน"],
+      team:["ควรมอบหมายเป้าหมายชัด ๆ แล้วให้อิสระในการทำ","สื่อสารกับเขาแบบตรงประเด็น กระชับ","จุดที่ควรพัฒนา: การรับฟังผู้อื่น และความใจเย็นกับเพื่อนร่วมทีม"] },
+  I:{ name:"อินทรี", emoji:"🦅", color:"#f2a93b", grad:"linear-gradient(135deg,#f2a93b,#e67e22)",
+      nick:"Influence — นักสื่อสาร สร้างบรรยากาศ",
+      work:["สื่อสารเก่ง เข้ากับคนง่าย สร้างความประทับใจแรกได้ดี","ร่าเริง มองโลกในแง่ดี สร้างบรรยากาศที่ดีในทีม","ความคิดสร้างสรรค์สูง ชอบไอเดียใหม่ ๆ","กระตือรือร้น ชอบงานที่ได้พบปะผู้คน"],
+      fit:["งานบริการลูกค้า / งานต้อนรับ","งานขาย การตลาด ประชาสัมพันธ์","งานที่ต้องประสานงานกับคนหลากหลาย"],
+      team:["เหมาะกับงานที่ได้ใช้ทักษะคน มากกว่างานเอกสารซ้ำ ๆ","ให้คำชมและการยอมรับจะช่วยกระตุ้นได้ดี","จุดที่ควรพัฒนา: ความสม่ำเสมอ การตรงต่อเวลา และความละเอียดรอบคอบ"] },
+  S:{ name:"หนู", emoji:"🐭", color:"#4caf7d", grad:"linear-gradient(135deg,#4caf7d,#2e8b57)",
+      nick:"Steadiness — ผู้สนับสนุน ทีมเวิร์คดี",
+      work:["ใจเย็น สุภาพ ประนีประนอม ทำงานเป็นทีมได้ดีมาก","อดทน ทำงานสม่ำเสมอ ไว้วางใจได้","ใส่ใจความรู้สึกของเพื่อนร่วมงานและลูกค้า","ชอบช่วยเหลือ ยินดีสนับสนุนผู้อื่นเสมอ"],
+      fit:["งานบริการที่ต้องดูแลเอาใจใส่","งานสนับสนุน / ธุรการ / ประสานงาน","งานที่ต้องการความสม่ำเสมอระยะยาว"],
+      team:["เป็นคนที่ช่วยให้ทีมกลมเกลียว ลดความขัดแย้ง","การเปลี่ยนแปลงกะทันหันอาจทำให้เครียด ควรบอกล่วงหน้า","จุดที่ควรพัฒนา: กล้าแสดงความคิดเห็น และกล้าปฏิเสธเมื่อจำเป็น"] },
+  C:{ name:"หมี", emoji:"🐻", color:"#4a90d9", grad:"linear-gradient(135deg,#4a90d9,#2c6cb0)",
+      nick:"Conscientiousness — นักวิเคราะห์ ละเอียดรอบคอบ",
+      work:["ละเอียดรอบคอบ มีระเบียบ ทำงานเป็นระบบ","วางแผนก่อนลงมือ ใช้เหตุผลและข้อมูลตัดสินใจ","เคารพกฎระเบียบ มาตรฐานการทำงานสูง","งานที่ส่งมอบมีคุณภาพ เชื่อถือได้"],
+      fit:["งานเอกสาร บัญชี การเงิน สต๊อก","งานที่ต้องการความแม่นยำสูง / ควบคุมคุณภาพ","งานวิเคราะห์และวางระบบ"],
+      team:["ต้องการข้อมูลและเวลาในการตัดสินใจ อย่าเร่งจนเกินไป","มอบหมายงานพร้อมรายละเอียดชัดเจนจะทำได้ดีที่สุด","จุดที่ควรพัฒนา: ความยืดหยุ่น และการกล้าตัดสินใจเมื่อข้อมูลไม่ครบ"] },
+};
+
+/* ---------------- state ---------------- */
+let cur = 0;
+let answers = QUESTIONS.map(q => q.map(() => null));
+let candidate = {name:""};
+let lastResult = null;
+
+/* ---------------- หน้าจอ ---------------- */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function startQuiz(){
+  const name = document.getElementById("inp-name").value.trim();
+  if(!name){
+    document.getElementById("name-err").style.display = "block";
+    document.getElementById("inp-name").focus();
+    return;
+  }
+  document.getElementById("name-err").style.display = "none";
+  candidate.name = name;
+  cur = 0;
+  renderQ();
+  show("screen-quiz");
+}
+function restart(){
+  answers = QUESTIONS.map(q => q.map(() => null));
+  lastResult = null;
+  show("screen-start");
+}
+
+/* ---------------- คำถาม ---------------- */
+function renderQ(){
+  const q = QUESTIONS[cur], a = answers[cur];
+  document.getElementById("qcount").textContent = `ข้อ ${cur+1} / ${QUESTIONS.length}`;
+  const doneCount = answers.filter(x => x.every(v => v !== null)).length;
+  document.getElementById("qdone").textContent = `ทำแล้ว ${doneCount}/${QUESTIONS.length} ข้อ`;
+  document.getElementById("progress-fill").style.width = `${(cur)/QUESTIONS.length*100}%`;
+
+  const list = document.getElementById("stmt-list");
+  list.innerHTML = "";
+  q.forEach((st, i) => {
+    const div = document.createElement("div");
+    div.className = "stmt" + (a[i] !== null ? " done" : "");
+    div.innerHTML = `<div class="text">${"ABCD"[i]}. ${st.t}</div>`;
+    const row = document.createElement("div");
+    row.className = "scores";
+    for(let v = 4; v >= 1; v--){
+      const b = document.createElement("button");
+      b.className = "score-btn" + (a[i] === v ? ` selected v${v}` : "");
+      b.textContent = v;
+      b.onclick = () => pick(i, v);
+      row.appendChild(b);
+    }
+    div.appendChild(row);
+    list.appendChild(div);
+  });
+
+  const complete = a.every(v => v !== null);
+  document.getElementById("btn-next").disabled = !complete;
+  document.getElementById("btn-next").textContent = (cur === QUESTIONS.length-1) ? "ดูผลลัพธ์ 🎉" : "ถัดไป ➜";
+  document.getElementById("btn-back").textContent = cur === 0 ? "← หน้าแรก" : "← ย้อนกลับ";
+  document.getElementById("hint").textContent = complete ? "ครบแล้ว! กดถัดไปได้เลย ✓" : "เลือกคะแนนให้ครบทั้ง 4 ประโยคก่อนนะ";
+}
+
+function pick(idx, val){
+  const a = answers[cur];
+  const wasComplete = a.every(v => v !== null);
+  // ถ้าเลขนี้ถูกใช้ที่ประโยคอื่น ให้ย้ายมา (ประโยคเดิมกลายเป็นว่าง)
+  const holder = a.indexOf(val);
+  if(holder !== -1 && holder !== idx) a[holder] = null;
+  a[idx] = val;
+  renderQ();
+  // ถ้าเพิ่งทำครบครั้งแรก เลื่อนไปข้อถัดไปอัตโนมัติ
+  const nowComplete = a.every(v => v !== null);
+  if(!wasComplete && nowComplete && cur < QUESTIONS.length-1){
+    setTimeout(() => { if(answers[cur].every(v => v !== null)) nextQ(); }, 550);
+  }
+}
+
+function nextQ(){
+  if(cur < QUESTIONS.length-1){ cur++; renderQ(); window.scrollTo({top:0, behavior:"smooth"}); }
+  else showResult();
+}
+function prevQ(){
+  if(cur > 0){ cur--; renderQ(); }
+  else show("screen-start"); // ข้อแรก → กลับหน้าแรก
+}
+function backToQuiz(){
+  cur = QUESTIONS.length - 1; // กลับไปหน้าคำถามข้อสุดท้าย เพื่อย้อนแก้คำตอบได้
+  renderQ();
+  show("screen-quiz");
+}
+
+/* ---------------- ผลลัพธ์ ---------------- */
+function showResult(){
+  const total = {D:0, I:0, S:0, C:0};
+  QUESTIONS.forEach((q, qi) => q.forEach((st, si) => { total[st.k] += answers[qi][si]; }));
+
+  // เรียงคะแนนมาก→น้อย แล้วเอา 2 อันดับแรก (บุคลิกหลัก + บุคลิกรอง)
+  const order = Object.keys(total).sort((a,b) => total[b]-total[a]);
+  const primary = order[0], secondary = order[1];
+  const main = TYPES[primary], second = TYPES[secondary];
+  const tie = total[primary] === total[secondary];
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("th-TH", {year:"numeric", month:"long", day:"numeric"})
+                + " " + now.toLocaleTimeString("th-TH", {hour:"2-digit", minute:"2-digit"}) + " น.";
+  lastResult = {total, order, tie, dateStr};
+
+  const hero = document.getElementById("result-hero");
+  hero.style.background = main.grad;
+  document.getElementById("r-emoji").textContent = main.emoji;
+  document.getElementById("r-name").textContent = main.name;
+  document.getElementById("r-nick").textContent = main.nick;
+  document.getElementById("r-second").innerHTML =
+    (tie ? "คู่กับ " : "ตามด้วย ") + `${second.emoji} <b>${second.name}</b>`;
+  document.getElementById("who-box").innerHTML =
+    `👤 <b>${escapeHtml(candidate.name)}</b><br>🗓 ${dateStr}`;
+
+  // กราฟคะแนน (คะแนนแต่ละแบบอยู่ระหว่าง 10–40)
+  const bars = document.getElementById("bars");
+  bars.innerHTML = "";
+  order.forEach(k => {
+    const t = TYPES[k];
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML =
+      `<span class="who">${t.emoji} ${t.name}</span>
+       <div class="bar-track"><div class="bar-fill" style="background:${t.color}" data-w="${total[k]/40*100}">${total[k]}</div></div>`;
+    bars.appendChild(row);
+  });
+
+  // คำอธิบาย 2 อันดับสูงสุด: บุคลิกหลัก + บุคลิกรอง
+  const dc = document.getElementById("desc-card");
+  dc.innerHTML = "";
+  [primary, secondary].forEach((k, wi) => {
+    const t = TYPES[k];
+    const role = wi === 0 ? "🥇 บุคลิกหลัก" : (tie ? "🥇 บุคลิกร่วม (คะแนนเท่ากัน)" : "🥈 บุคลิกรอง");
+    dc.innerHTML += `
+      <div style="font-size:13px; color:var(--muted); margin-bottom:5px; font-weight:500;">${role} · ${total[k]} คะแนน</div>
+      <span class="tag" style="background:${t.color}">${t.emoji} ${t.name} · ${t.nick}</span>
+      <h2 class="sec-h">💪 สไตล์การทำงาน</h2>
+      <ul class="desc-list">${t.work.map(x => `<li>${x}</li>`).join("")}</ul>
+      <h2 class="sec-h">🎯 ลักษณะงานที่เหมาะ</h2>
+      <ul class="desc-list">${t.fit.map(x => `<li>${x}</li>`).join("")}</ul>
+      <h2 class="sec-h">🤝 การทำงานร่วมกับทีม</h2>
+      <ul class="desc-list">${t.team.map(x => `<li>${x}</li>`).join("")}</ul>
+      ${wi === 0 ? '<hr style="border:none;border-top:1px solid #eef0f9;margin:18px 0">' : ''}`;
+  });
+
+  show("screen-result");
+  setTimeout(() => {
+    document.querySelectorAll(".bar-fill").forEach(el => { el.style.width = el.dataset.w + "%"; });
+  }, 80);
+}
+
+/* ---------------- คัดลอกผลสรุปส่งให้ HR ---------------- */
+function copySummary(){
+  if(!lastResult) return;
+  const {total, order, tie, dateStr} = lastResult;
+  const p = order[0], s = order[1];
+  const lines = [
+    "📋 ผลแบบทดสอบบุคลิกภาพ DISC",
+    "━━━━━━━━━━━━━━━━━━",
+    `👤 ชื่อ: ${candidate.name}`,
+    `🗓 วันที่ทำ: ${dateStr}`,
+    "",
+    `✅ ผลลัพธ์: ${TYPES[p].emoji} ${TYPES[p].name} (${p}) ${tie ? "คู่กับ" : "นำ ตามด้วย"} ${TYPES[s].emoji} ${TYPES[s].name} (${s})`,
+    `   หลัก: ${TYPES[p].nick}`,
+    `   รอง: ${TYPES[s].nick}`,
+    "",
+    "📊 คะแนน (เต็ม 40):",
+    ...Object.keys(total).sort((a,b) => total[b]-total[a])
+      .map(k => `   ${TYPES[k].emoji} ${TYPES[k].name} (${k}) = ${total[k]}`),
+  ].filter(x => x !== null);
+  const text = lines.join("\n");
+
+  const done = () => {
+    const t = document.getElementById("toast");
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done){
+  // สำหรับเปิดจากไฟล์โดยตรง (file://) ที่บางเบราว์เซอร์ไม่ให้ใช้ clipboard API
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); done(); }catch(e){ alert(text); }
+  document.body.removeChild(ta);
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+</script>
+</body>
+</html>
