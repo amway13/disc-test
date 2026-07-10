@@ -223,12 +223,15 @@
     <div class="card no-print">
       <h2>📤 แชร์ผลของคุณ</h2>
       <p style="font-size:14px; color:var(--muted); margin-bottom:12px; line-height:1.6;">
-        กดปุ่มด้านล่างเพื่อคัดลอกผลสรุป แล้วส่งทาง Line หรืออีเมล
-        หรือพิมพ์/บันทึกเป็น PDF เก็บไว้ได้
+        บันทึกผลเป็นรูปภาพเพื่อเซฟหรือส่งทาง Line ได้เลย
+        หรือคัดลอกเป็นข้อความ / บันทึกเป็นไฟล์ PDF ก็ได้
       </p>
-      <div style="display:flex; gap:10px;">
-        <button class="btn outline" style="flex:1;" onclick="copySummary()">📋 คัดลอกผลสรุป</button>
-        <button class="btn outline" style="flex:1;" onclick="window.print()">🖨 พิมพ์ / PDF</button>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn" onclick="saveAsImage()">🖼 บันทึกผลเป็นรูปภาพ</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn outline" style="flex:1;" onclick="copySummary()">📋 คัดลอกผลสรุป</button>
+          <button class="btn outline" style="flex:1;" onclick="window.print()">🖨 พิมพ์ / PDF</button>
+        </div>
       </div>
     </div>
     <div class="nav no-print">
@@ -489,11 +492,7 @@ function copySummary(){
   ].filter(x => x !== null);
   const text = lines.join("\n");
 
-  const done = () => {
-    const t = document.getElementById("toast");
-    t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 2200);
-  };
+  const done = () => showToast("คัดลอกผลสรุปแล้ว ✓");
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
   } else {
@@ -512,6 +511,135 @@ function fallbackCopy(text, done){
 }
 function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* ---------------- บันทึกผลเป็นรูปภาพ (PNG) ----------------
+   วาดการ์ดสรุปผลลง canvas เองทั้งหมด ไม่ใช้ไลบรารีภายนอก
+   ใช้ได้แม้เปิดจากไฟล์ตรง ๆ แบบออฟไลน์                     */
+function rr(ctx, x, y, w, h, r){
+  if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+async function saveAsImage(){
+  if(!lastResult) return;
+  try{ await document.fonts.ready; }catch(e){}
+  const {total, order, tie, dateStr} = lastResult;
+  const p = TYPES[order[0]], s = TYPES[order[1]];
+  const F = (w, sz) => `${w} ${sz}px Prompt, 'Segoe UI', Tahoma, sans-serif`;
+
+  const W = 1080, H = 1400;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+
+  // พื้นหลัง
+  ctx.fillStyle = "#f4f6fb"; ctx.fillRect(0, 0, W, H);
+
+  // ส่วนหัว gradient ตามสีบุคลิกหลัก
+  const gc = p.grad.match(/#[0-9a-fA-F]{6}/g) || ["#5b6ef5", "#8b5cf6"];
+  const g = ctx.createLinearGradient(0, 0, W, 560);
+  g.addColorStop(0, gc[0]); g.addColorStop(1, gc[1]);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, 560);
+
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(255,255,255,.9)";
+  ctx.font = F(300, 38);
+  ctx.fillText("ผลแบบทดสอบบุคลิกภาพ DISC", W/2, 78);
+
+  ctx.font = "130px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif";
+  ctx.fillText(p.emoji, W/2, 215);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = F(700, 76);
+  ctx.fillText(p.name, W/2, 332);
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  ctx.font = F(400, 32);
+  ctx.fillText(p.nick, W/2, 398);
+
+  // ป้ายบุคลิกรอง
+  const pillTxt = `${tie ? "คู่กับ" : "ตามด้วย"} ${s.emoji} ${s.name}`;
+  ctx.font = F(500, 34);
+  const pw = ctx.measureText(pillTxt).width + 70;
+  ctx.fillStyle = "rgba(255,255,255,.22)";
+  rr(ctx, W/2 - pw/2, 448, pw, 64, 32); ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillText(pillTxt, W/2, 482);
+
+  // การ์ดข้อมูลผู้ทำ
+  ctx.fillStyle = "#fff";
+  rr(ctx, 60, 610, W-120, 150, 24); ctx.fill();
+  ctx.fillStyle = "#1f2937";
+  ctx.font = F(600, 36);
+  ctx.fillText(`👤 ${candidate.name}`, W/2, 668);
+  ctx.fillStyle = "#6b7280";
+  ctx.font = F(300, 27);
+  ctx.fillText(`🗓 ${dateStr}`, W/2, 722);
+
+  // การ์ดคะแนน
+  ctx.fillStyle = "#fff";
+  rr(ctx, 60, 800, W-120, 470, 24); ctx.fill();
+  ctx.fillStyle = "#1f2937";
+  ctx.textAlign = "left";
+  ctx.font = F(600, 34);
+  ctx.fillText("📊 คะแนน (เต็ม 40)", 110, 866);
+
+  let y = 950;
+  order.forEach(k => {
+    const t = TYPES[k];
+    ctx.fillStyle = "#1f2937";
+    ctx.font = F(500, 30);
+    ctx.fillText(`${t.emoji} ${t.name}`, 110, y);
+    ctx.fillStyle = "#eef0f9";
+    rr(ctx, 340, y-26, 560, 52, 14); ctx.fill();
+    const bw = Math.max(560 * total[k] / 40, 78);
+    ctx.fillStyle = t.color;
+    rr(ctx, 340, y-26, bw, 52, 14); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = F(600, 28);
+    ctx.textAlign = "right";
+    ctx.fillText(total[k], 340 + bw - 18, y+1);
+    ctx.textAlign = "left";
+    y += 86;
+  });
+
+  // ท้ายภาพ
+  ctx.fillStyle = "#9aa1b8";
+  ctx.textAlign = "center";
+  ctx.font = F(300, 26);
+  ctx.fillText("🐂 กระทิง · 🦅 อินทรี · 🐭 หนู · 🐻 หมี", W/2, 1330);
+
+  cv.toBlob(async blob => {
+    if(!blob){ showToast("บันทึกรูปไม่สำเร็จ"); return; }
+    const fname = `DISC-${candidate.name.replace(/\s+/g, "-")}.png`;
+    const file = new File([blob], fname, {type:"image/png"});
+    // มือถือ: เปิดเมนูแชร์ เซฟรูปหรือส่ง Line ได้เลย
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:"ผลแบบทดสอบ DISC"}); return; }
+      catch(e){ if(e.name === "AbortError") return; }
+    }
+    // คอม: ดาวน์โหลดเป็นไฟล์รูป
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    showToast("บันทึกรูปแล้ว ✓");
+  }, "image/png");
 }
 </script>
 </body>
