@@ -232,7 +232,7 @@
       <div class="who-box" id="who-box"></div>
     </div>
     <div class="card">
-      <h2>📊 คะแนนของคุณ</h2>
+      <h2>📊 คะแนนของคุณ (รวม 100 คะแนน)</h2>
       <div id="bars"></div>
     </div>
     <div class="card" id="desc-card"></div>
@@ -466,16 +466,18 @@ function showResult(){
   document.getElementById("who-box").innerHTML =
     `👤 <b>${escapeHtml(candidate.name)}</b><br>🗓 ${dateStr}`;
 
-  // กราฟคะแนน (คะแนนแต่ละแบบอยู่ระหว่าง 10–40)
+  // กราฟคะแนน — คะแนนทั้ง 4 ด้านรวมกัน = 100 เสมอ
+  // ความยาวแท่งเทียบกับคะแนนอันดับ 1 (อันดับ 1 ยาวเต็ม แท่งอื่นย่อตามสัดส่วน)
   const bars = document.getElementById("bars");
   bars.innerHTML = "";
+  const maxScore = total[order[0]];
   order.forEach(k => {
     const t = TYPES[k];
     const row = document.createElement("div");
     row.className = "bar-row";
     row.innerHTML =
       `<span class="who">${t.emoji} ${t.name}</span>
-       <div class="bar-track"><div class="bar-fill" style="background:${t.color}" data-w="${total[k]/40*100}">${total[k]}</div></div>`;
+       <div class="bar-track"><div class="bar-fill" style="background:${t.color}" data-w="${total[k]/maxScore*100}">${total[k]}</div></div>`;
     bars.appendChild(row);
   });
 
@@ -518,7 +520,7 @@ function copySummary(){
     `   หลัก: ${TYPES[p].nick}`,
     `   รอง: ${TYPES[s].nick}`,
     "",
-    "📊 คะแนน (เต็ม 40):",
+    "📊 คะแนน (รวม 100 คะแนน):",
     ...Object.keys(total).sort((a,b) => total[b]-total[a])
       .map(k => `   ${TYPES[k].emoji} ${TYPES[k].name} (${k}) = ${total[k]}`),
   ].filter(x => x !== null);
@@ -626,9 +628,10 @@ async function saveAsImage(){
   ctx.fillStyle = "#1f2937";
   ctx.textAlign = "left";
   ctx.font = F(600, 34);
-  ctx.fillText("📊 คะแนน (เต็ม 40)", 110, 866);
+  ctx.fillText("📊 คะแนน (รวม 100 คะแนน)", 110, 866);
 
   let y = 950;
+  const maxSc = total[order[0]];
   order.forEach(k => {
     const t = TYPES[k];
     ctx.fillStyle = "#1f2937";
@@ -636,7 +639,7 @@ async function saveAsImage(){
     ctx.fillText(`${t.emoji} ${t.name}`, 110, y);
     ctx.fillStyle = "#eef0f9";
     rr(ctx, 340, y-26, 560, 52, 14); ctx.fill();
-    const bw = Math.max(560 * total[k] / 40, 78);
+    const bw = Math.max(560 * total[k] / maxSc, 78);
     ctx.fillStyle = t.color;
     rr(ctx, 340, y-26, bw, 52, 14); ctx.fill();
     ctx.fillStyle = "#fff";
