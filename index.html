@@ -145,6 +145,22 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* ---------- หน้าต่างพรีวิวรูปผลลัพธ์ ---------- */
+  .img-modal{
+    position:fixed; inset:0; background:rgba(15,20,40,.78);
+    display:none; align-items:flex-start; justify-content:center;
+    z-index:100; overflow-y:auto; padding:20px;
+  }
+  .img-modal.show{display:flex;}
+  .img-box{
+    background:#fff; border-radius:16px; padding:14px;
+    max-width:400px; width:100%; margin:auto;
+    animation:fade .3s ease;
+  }
+  .img-box img{width:100%; border-radius:12px; border:1px solid #e3e7f5; display:block;}
+  .img-hint{font-size:13.5px; color:var(--muted); text-align:center; margin:12px 0; line-height:1.8;}
+  .img-actions{display:flex; flex-direction:column; gap:8px;}
+
   /* ---------- พิมพ์ / บันทึก PDF ---------- */
   @media print{
     body{background:#fff; padding:0;}
@@ -241,6 +257,20 @@
   </div>
 
 </div>
+
+<!-- ============ หน้าต่างพรีวิวรูปผลลัพธ์ ============ -->
+<div class="img-modal" id="img-modal">
+  <div class="img-box">
+    <img id="img-preview" alt="ผลแบบทดสอบ DISC">
+    <p class="img-hint">📱 มือถือ: <b>กดค้างที่รูป</b> แล้วเลือก “บันทึกรูปภาพ”<br>💻 คอมพิวเตอร์: กดปุ่มดาวน์โหลดด้านล่าง</p>
+    <div class="img-actions">
+      <a class="btn" id="img-download" style="text-align:center; text-decoration:none;">⬇ ดาวน์โหลดรูป</a>
+      <button class="btn outline" id="img-share">📤 แชร์ / ส่ง Line</button>
+      <button class="btn ghost" onclick="document.getElementById('img-modal').classList.remove('show')">ปิด ✕</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">คัดลอกผลสรุปแล้ว ✓</div>
 
 <script>
@@ -623,25 +653,35 @@ async function saveAsImage(){
   ctx.font = F(300, 26);
   ctx.fillText("🐂 กระทิง · 🦅 อินทรี · 🐭 หนู · 🐻 หมี", W/2, 1330);
 
-  cv.toBlob(async blob => {
-    if(!blob){ showToast("บันทึกรูปไม่สำเร็จ"); return; }
-    const fname = `DISC-${candidate.name.replace(/\s+/g, "-")}.png`;
-    const file = new File([blob], fname, {type:"image/png"});
-    // มือถือ: เปิดเมนูแชร์ เซฟรูปหรือส่ง Line ได้เลย
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:"ผลแบบทดสอบ DISC"}); return; }
-      catch(e){ if(e.name === "AbortError") return; }
-    }
-    // คอม: ดาวน์โหลดเป็นไฟล์รูป
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = fname;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    showToast("บันทึกรูปแล้ว ✓");
-  }, "image/png");
+  // แสดงรูปในหน้าต่างพรีวิว — มือถือกดค้างที่รูปเพื่อเซฟได้เลย (ชัวร์ทุกเบราว์เซอร์
+  // รวมถึงเบราว์เซอร์ในแอป Line) ส่วนคอมใช้ปุ่มดาวน์โหลด
+  const dataUrl = cv.toDataURL("image/png");
+  const fname = `DISC-${candidate.name.replace(/\s+/g, "-")}.png`;
+  document.getElementById("img-preview").src = dataUrl;
+  const dl = document.getElementById("img-download");
+  dl.href = dataUrl;
+  dl.download = fname;
+
+  // ปุ่มแชร์: แสดงเฉพาะเครื่องที่รองรับการแชร์ไฟล์ (มือถือส่วนใหญ่)
+  const shareBtn = document.getElementById("img-share");
+  let file = null;
+  try{
+    const bin = atob(dataUrl.split(",")[1]);
+    const arr = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    file = new File([arr], fname, {type:"image/png"});
+  }catch(e){}
+  if(file && navigator.canShare && navigator.canShare({files:[file]})){
+    shareBtn.style.display = "";
+    shareBtn.onclick = async () => {
+      try{ await navigator.share({files:[file], title:"ผลแบบทดสอบ DISC"}); }
+      catch(e){ /* ผู้ใช้กดยกเลิกเอง ไม่ต้องทำอะไร */ }
+    };
+  } else {
+    shareBtn.style.display = "none";
+  }
+
+  document.getElementById("img-modal").classList.add("show");
 }
 </script>
 </body>
