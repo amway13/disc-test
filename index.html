@@ -63,6 +63,7 @@
     font-family:inherit; font-size:17px; font-weight:600;
     padding:15px; border-radius:14px; transition:.2s;
     box-shadow:0 4px 14px rgba(91,110,245,.35);
+    touch-action:manipulation;
   }
   .btn:hover{background:var(--primary-dark);}
   .btn:disabled{background:#c3c9e8; box-shadow:none; cursor:not-allowed;}
@@ -95,7 +96,8 @@
   .score-btn{
     flex:1; padding:10px 0; border-radius:10px; border:1.5px solid #dde1f0;
     background:#f8f9fe; font-family:inherit; font-size:16px; font-weight:600;
-    color:#7a819c; cursor:pointer; transition:.15s;
+    color:#7a819c; cursor:pointer; transition:background .1s, color .1s;
+    touch-action:manipulation;
   }
   .score-btn:hover{border-color:var(--primary); color:var(--primary);}
   .score-btn.selected{color:#fff; border-color:transparent;}
@@ -379,24 +381,25 @@ function restart(){
 }
 
 /* ---------------- คำถาม ---------------- */
+// สร้าง DOM ของคำถามใหม่เฉพาะตอนเปลี่ยนข้อ
 function renderQ(){
-  const q = QUESTIONS[cur], a = answers[cur];
+  const q = QUESTIONS[cur];
   document.getElementById("qcount").textContent = `ข้อ ${cur+1} / ${QUESTIONS.length}`;
-  const doneCount = answers.filter(x => x.every(v => v !== null)).length;
-  document.getElementById("qdone").textContent = `ทำแล้ว ${doneCount}/${QUESTIONS.length} ข้อ`;
   document.getElementById("progress-fill").style.width = `${(cur)/QUESTIONS.length*100}%`;
+  document.getElementById("btn-next").textContent = (cur === QUESTIONS.length-1) ? "ดูผลลัพธ์ 🎉" : "ถัดไป ➜";
+  document.getElementById("btn-back").textContent = cur === 0 ? "← หน้าแรก" : "← ย้อนกลับ";
 
   const list = document.getElementById("stmt-list");
   list.innerHTML = "";
   q.forEach((st, i) => {
     const div = document.createElement("div");
-    div.className = "stmt" + (a[i] !== null ? " done" : "");
+    div.className = "stmt";
     div.innerHTML = `<div class="text">${"ABCD"[i]}. ${st.t}</div>`;
     const row = document.createElement("div");
     row.className = "scores";
     for(let v = 4; v >= 1; v--){
       const b = document.createElement("button");
-      b.className = "score-btn" + (a[i] === v ? ` selected v${v}` : "");
+      b.className = "score-btn";
       b.textContent = v;
       b.onclick = () => pick(i, v);
       row.appendChild(b);
@@ -404,11 +407,23 @@ function renderQ(){
     div.appendChild(row);
     list.appendChild(div);
   });
+  updateQState();
+}
 
+// อัปเดตเฉพาะสถานะปุ่ม/ไฮไลต์ ไม่สร้าง DOM ใหม่ — ตอบสนองไวตอนกดคะแนน
+function updateQState(){
+  const a = answers[cur];
+  document.querySelectorAll("#stmt-list .stmt").forEach((div, i) => {
+    div.classList.toggle("done", a[i] !== null);
+    div.querySelectorAll(".score-btn").forEach(b => {
+      const v = +b.textContent;
+      b.className = "score-btn" + (a[i] === v ? ` selected v${v}` : "");
+    });
+  });
   const complete = a.every(v => v !== null);
+  const doneCount = answers.filter(x => x.every(v => v !== null)).length;
+  document.getElementById("qdone").textContent = `ทำแล้ว ${doneCount}/${QUESTIONS.length} ข้อ`;
   document.getElementById("btn-next").disabled = !complete;
-  document.getElementById("btn-next").textContent = (cur === QUESTIONS.length-1) ? "ดูผลลัพธ์ 🎉" : "ถัดไป ➜";
-  document.getElementById("btn-back").textContent = cur === 0 ? "← หน้าแรก" : "← ย้อนกลับ";
   document.getElementById("hint").textContent = complete ? "ครบแล้ว! กดถัดไปได้เลย ✓" : "เลือกคะแนนให้ครบทั้ง 4 ประโยคก่อนนะ";
 }
 
@@ -419,11 +434,11 @@ function pick(idx, val){
   const holder = a.indexOf(val);
   if(holder !== -1 && holder !== idx) a[holder] = null;
   a[idx] = val;
-  renderQ();
+  updateQState();
   // ถ้าเพิ่งทำครบครั้งแรก เลื่อนไปข้อถัดไปอัตโนมัติ
   const nowComplete = a.every(v => v !== null);
   if(!wasComplete && nowComplete && cur < QUESTIONS.length-1){
-    setTimeout(() => { if(answers[cur].every(v => v !== null)) nextQ(); }, 550);
+    setTimeout(() => { if(answers[cur].every(v => v !== null)) nextQ(); }, 400);
   }
 }
 
@@ -588,20 +603,25 @@ async function saveAsImage(){
   g.addColorStop(0, gc[0]); g.addColorStop(1, gc[1]);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, 560);
 
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  // จัดกึ่งกลาง/ชิดขวาด้วยการวัดความกว้างข้อความเอง ไม่พึ่ง textAlign
+  // (เบราว์เซอร์บางตัวบน iPhone เช่นตัวเปิดจากสแกน QR ไม่สนใจ textAlign ทำให้ข้อความเบี้ยว)
+  ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  const ctr = (txt, y) => ctx.fillText(txt, (W - ctx.measureText(txt).width) / 2, y);
+  const rgt = (txt, xEnd, y) => ctx.fillText(txt, xEnd - ctx.measureText(txt).width, y);
+
   ctx.fillStyle = "rgba(255,255,255,.9)";
   ctx.font = F(300, 38);
-  ctx.fillText("ผลแบบทดสอบบุคลิกภาพ DISC", W/2, 78);
+  ctr("ผลแบบทดสอบบุคลิกภาพ DISC", 78);
 
-  ctx.font = "130px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif";
-  ctx.fillText(p.emoji, W/2, 215);
+  ctx.font = "130px 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif";
+  ctr(p.emoji, 215);
 
   ctx.fillStyle = "#fff";
   ctx.font = F(700, 76);
-  ctx.fillText(p.name, W/2, 332);
+  ctr(p.name, 332);
   ctx.fillStyle = "rgba(255,255,255,.92)";
   ctx.font = F(400, 32);
-  ctx.fillText(p.nick, W/2, 398);
+  ctr(p.nick, 398);
 
   // ป้ายบุคลิกรอง
   const pillTxt = `${tie ? "คู่กับ" : "ตามด้วย"} ${s.emoji} ${s.name}`;
@@ -610,23 +630,22 @@ async function saveAsImage(){
   ctx.fillStyle = "rgba(255,255,255,.22)";
   rr(ctx, W/2 - pw/2, 448, pw, 64, 32); ctx.fill();
   ctx.fillStyle = "#fff";
-  ctx.fillText(pillTxt, W/2, 482);
+  ctr(pillTxt, 482);
 
   // การ์ดข้อมูลผู้ทำ
   ctx.fillStyle = "#fff";
   rr(ctx, 60, 610, W-120, 150, 24); ctx.fill();
   ctx.fillStyle = "#1f2937";
   ctx.font = F(600, 36);
-  ctx.fillText(`👤 ${candidate.name}`, W/2, 668);
+  ctr(`👤 ${candidate.name}`, 668);
   ctx.fillStyle = "#6b7280";
   ctx.font = F(300, 27);
-  ctx.fillText(`🗓 ${dateStr}`, W/2, 722);
+  ctr(`🗓 ${dateStr}`, 722);
 
   // การ์ดคะแนน
   ctx.fillStyle = "#fff";
   rr(ctx, 60, 800, W-120, 470, 24); ctx.fill();
   ctx.fillStyle = "#1f2937";
-  ctx.textAlign = "left";
   ctx.font = F(600, 34);
   ctx.fillText("📊 คะแนน (รวม 100 คะแนน)", 110, 866);
 
@@ -644,17 +663,14 @@ async function saveAsImage(){
     rr(ctx, 340, y-26, bw, 52, 14); ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.font = F(600, 28);
-    ctx.textAlign = "right";
-    ctx.fillText(total[k], 340 + bw - 18, y+1);
-    ctx.textAlign = "left";
+    rgt(String(total[k]), 340 + bw - 18, y+1);
     y += 86;
   });
 
   // ท้ายภาพ
   ctx.fillStyle = "#9aa1b8";
-  ctx.textAlign = "center";
   ctx.font = F(300, 26);
-  ctx.fillText("🐂 กระทิง · 🦅 อินทรี · 🐭 หนู · 🐻 หมี", W/2, 1330);
+  ctr("🐂 กระทิง · 🦅 อินทรี · 🐭 หนู · 🐻 หมี", 1330);
 
   // แสดงรูปในหน้าต่างพรีวิว — มือถือกดค้างที่รูปเพื่อเซฟได้เลย (ชัวร์ทุกเบราว์เซอร์
   // รวมถึงเบราว์เซอร์ในแอป Line) ส่วนคอมใช้ปุ่มดาวน์โหลด
