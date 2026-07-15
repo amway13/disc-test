@@ -33,6 +33,13 @@
   .hero .animals{font-size:40px; letter-spacing:6px; margin-bottom:10px;}
   .hero h1{font-size:24px; font-weight:700; margin-bottom:6px;}
   .hero p{font-size:14.5px; opacity:.92; font-weight:300;}
+  /* header แบบย่อ (หน้าคำถาม) — อิโมจิสัตว์อยู่บน ชื่ออยู่ล่าง แบบกะทัดรัด */
+  .hero.mini{
+    padding:16px 16px 14px; margin-bottom:12px;
+  }
+  .hero.mini .animals{font-size:30px; letter-spacing:8px; margin-bottom:6px;}
+  .hero.mini h1{font-size:21px; margin:0;}
+  .hero.mini p{display:none;}
   .card{
     background:var(--card); border-radius:var(--radius);
     padding:22px; box-shadow:var(--shadow); margin-bottom:16px;
@@ -147,6 +154,19 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* ---------- จอมือถือ: จัดระยะให้หน้าคำถามกระชับ แต่ตัวอักษร/ปุ่มขนาดสบายตา ---------- */
+  @media (max-width:430px){
+    body{padding:12px;}
+    .hero.mini{margin-bottom:10px;}
+    .qtitle{font-size:14px; margin-bottom:10px;}
+    .progress{margin-bottom:12px;}
+    .stmt{padding:12px 16px; margin-bottom:10px; gap:9px;}
+    .stmt .text{font-size:15px;}
+    .score-btn{padding:9px 0;}
+    .nav .btn{padding:13px;}
+    .hint{display:none;}
+  }
+
   /* ---------- หน้าต่างพรีวิวรูปผลลัพธ์ ---------- */
   .img-modal{
     position:fixed; inset:0; background:rgba(15,20,40,.78);
@@ -213,7 +233,7 @@
       <span class="qcount" id="qdone"></span>
     </div>
     <div class="progress"><div class="fill" id="progress-fill"></div></div>
-    <p class="qtitle">ให้คะแนน 4 = ใช่เรามากที่สุด → 1 = ไม่ใช่เราเลย (ห้ามซ้ำกัน)</p>
+    <p class="qtitle">ให้คะแนน 4 = ใช่เราที่สุด → 1 = ไม่ใช่เราเลย</p>
     <div id="stmt-list"></div>
     <div class="nav">
       <button class="btn ghost" id="btn-back" onclick="prevQ()">← ย้อนกลับ</button>
@@ -357,8 +377,10 @@ let lastResult = null;
 function show(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  // หน้าผลลัพธ์ไม่ต้องแสดง header
-  document.querySelector(".hero").style.display = (id === "screen-result") ? "none" : "";
+  // header: หน้าแรก = เต็ม, หน้าคำถาม = แบบย่อบรรทัดเดียว, หน้าผลลัพธ์ = ซ่อน
+  const hero = document.querySelector(".hero");
+  hero.style.display = (id === "screen-result") ? "none" : "";
+  hero.classList.toggle("mini", id === "screen-quiz");
   window.scrollTo({top:0, behavior:"smooth"});
 }
 function startQuiz(){
