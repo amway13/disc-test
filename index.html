@@ -32,7 +32,7 @@
   }
   .hero .animals{font-size:40px; letter-spacing:6px; margin-bottom:10px;}
   .hero h1{font-size:24px; font-weight:700; margin-bottom:6px;}
-  .hero p{font-size:14.5px; opacity:.92; font-weight:300;}
+  .hero p{font-size:16px; opacity:.92; font-weight:300;}
   /* header แบบย่อ (หน้าคำถาม) — อิโมจิสัตว์อยู่บน ชื่ออยู่ล่าง แบบกะทัดรัด */
   .hero.mini{
     padding:16px 16px 14px; margin-bottom:12px;
@@ -44,30 +44,30 @@
     background:var(--card); border-radius:var(--radius);
     padding:22px; box-shadow:var(--shadow); margin-bottom:16px;
   }
-  .card h2{font-size:17px; margin-bottom:12px;}
+  .card h2{font-size:18.5px; margin-bottom:12px;}
   .field{margin-bottom:14px;}
-  .field label{display:block; font-size:14px; font-weight:500; margin-bottom:6px;}
+  .field label{display:block; font-size:15.5px; font-weight:500; margin-bottom:6px;}
   .field label .req{color:#e05252;}
   .field input{
     width:100%; padding:12px 14px; border-radius:12px;
     border:1.5px solid #dde1f0; background:#f8f9fe;
-    font-family:inherit; font-size:15.5px; color:var(--text);
+    font-family:inherit; font-size:17px; color:var(--text);
     outline:none; transition:.15s;
   }
   .field input:focus{border-color:var(--primary); background:#fff;}
-  .rule{display:flex; align-items:center; gap:12px; padding:7px 0; font-size:15px;}
+  .rule{display:flex; align-items:center; gap:12px; padding:7px 0; font-size:16.5px;}
   .rule .badge{
     width:34px; height:34px; border-radius:10px; flex:none;
     display:flex; align-items:center; justify-content:center;
     font-weight:600; color:#fff; font-size:16px;
   }
   .b4{background:#4caf7d;} .b3{background:#8bc34a;} .b2{background:#f2a93b;} .b1{background:#e05252;}
-  .note{font-size:13px; color:var(--muted); margin-top:10px; line-height:1.6;}
-  .err{font-size:13px; color:#e05252; margin-top:6px; display:none;}
+  .note{font-size:14.5px; color:var(--muted); margin-top:10px; line-height:1.6;}
+  .err{font-size:14.5px; color:#e05252; margin-top:6px; display:none;}
   .btn{
     display:block; width:100%; border:none; cursor:pointer;
     background:var(--primary); color:#fff;
-    font-family:inherit; font-size:17px; font-weight:600;
+    font-family:inherit; font-size:18px; font-weight:600;
     padding:15px; border-radius:14px; transition:.2s;
     box-shadow:0 4px 14px rgba(91,110,245,.35);
     touch-action:manipulation;
@@ -76,7 +76,7 @@
   .btn:disabled{background:#c3c9e8; box-shadow:none; cursor:not-allowed;}
   .btn.ghost{
     background:transparent; color:var(--muted); box-shadow:none;
-    font-weight:400; font-size:15px; padding:10px;
+    font-weight:400; font-size:16px; padding:10px;
   }
   .btn.ghost:hover{color:var(--text);}
   .btn.outline{
@@ -87,10 +87,10 @@
 
   /* ---------- หน้าคำถาม ---------- */
   .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
-  .qcount{font-size:14px; color:var(--muted); font-weight:500;}
+  .qcount{font-size:15px; color:var(--muted); font-weight:500;}
   .progress{height:8px; background:#e3e7f5; border-radius:99px; overflow:hidden; margin-bottom:18px;}
   .progress .fill{height:100%; width:0; background:linear-gradient(90deg,#5b6ef5,#8b5cf6); border-radius:99px; transition:width .3s;}
-  .qtitle{font-size:15px; color:var(--muted); margin-bottom:14px; line-height:1.6;}
+  .qtitle{font-size:16px; color:var(--muted); margin-bottom:14px; line-height:1.6;}
   .stmt{
     background:var(--card); border-radius:14px; padding:14px 16px;
     box-shadow:var(--shadow); margin-bottom:12px;
@@ -98,11 +98,11 @@
     border:2px solid transparent; transition:border .2s;
   }
   .stmt.done{border-color:#c9f0da;}
-  .stmt .text{font-size:15.5px; line-height:1.5;}
+  .stmt .text{font-size:17px; line-height:1.5;}
   .scores{display:flex; gap:8px;}
   .score-btn{
     flex:1; padding:10px 0; border-radius:10px; border:1.5px solid #dde1f0;
-    background:#f8f9fe; font-family:inherit; font-size:16px; font-weight:600;
+    background:#f8f9fe; font-family:inherit; font-size:17.5px; font-weight:600;
     color:#7a819c; cursor:pointer; transition:background .1s, color .1s;
     touch-action:manipulation;
   }
@@ -114,7 +114,7 @@
   .score-btn.selected.v1{background:#e05252;}
   .nav{display:flex; gap:10px; margin-top:6px;}
   .nav .btn{flex:1;}
-  .hint{text-align:center; font-size:13px; color:var(--muted); margin-top:12px;}
+  .hint{text-align:center; font-size:14px; color:var(--muted); margin-top:12px;}
 
   /* ---------- หน้าผลลัพธ์ ---------- */
   .result-hero{
@@ -122,30 +122,30 @@
     color:#fff; box-shadow:var(--shadow); margin-bottom:16px;
   }
   .result-hero .emoji{font-size:68px; line-height:1; margin-bottom:8px; display:block;}
-  .result-hero .label{font-size:14px; opacity:.85; font-weight:300;}
-  .result-hero h1{font-size:28px; font-weight:700; margin:4px 0;}
-  .result-hero .nick{font-size:15.5px; opacity:.92; font-weight:400;}
+  .result-hero .label{font-size:15px; opacity:.85; font-weight:300;}
+  .result-hero h1{font-size:30px; font-weight:700; margin:4px 0;}
+  .result-hero .nick{font-size:17px; opacity:.92; font-weight:400;}
   .who-box{
     background:rgba(255,255,255,.16); border-radius:12px;
-    padding:10px 14px; margin-top:14px; font-size:14px; line-height:1.7;
+    padding:10px 14px; margin-top:14px; font-size:15.5px; line-height:1.7;
     text-align:left; display:inline-block;
   }
   .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
-  .bar-row .who{width:86px; font-size:14px; font-weight:500; flex:none;}
+  .bar-row .who{width:92px; font-size:15.5px; font-weight:500; flex:none;}
   .bar-track{flex:1; height:26px; background:#eef0f9; border-radius:8px; overflow:hidden;}
   .bar-fill{
     height:100%; width:0; border-radius:8px;
     display:flex; align-items:center; justify-content:flex-end;
-    padding-right:8px; color:#fff; font-size:13px; font-weight:600;
+    padding-right:8px; color:#fff; font-size:14.5px; font-weight:600;
     transition:width .8s cubic-bezier(.2,.8,.3,1); min-width:34px;
   }
   .desc-list{list-style:none;}
   .desc-list li{
-    padding:5px 0 5px 26px; position:relative; font-size:15px; line-height:1.6;
+    padding:5px 0 5px 26px; position:relative; font-size:16.5px; line-height:1.6;
   }
   .desc-list li::before{content:"✦"; position:absolute; left:4px; color:var(--primary);}
-  .tag{font-size:13px; font-weight:600; padding:3px 10px; border-radius:99px; color:#fff; display:inline-block; margin-bottom:8px;}
-  .sec-h{font-size:15px; margin:12px 0 4px; font-weight:600;}
+  .tag{font-size:14.5px; font-weight:600; padding:4px 12px; border-radius:99px; color:#fff; display:inline-block; margin-bottom:8px;}
+  .sec-h{font-size:16.5px; margin:12px 0 4px; font-weight:600;}
   .toast{
     position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
     background:#1f2937; color:#fff; font-size:14px; padding:11px 22px;
@@ -170,13 +170,13 @@
     .hero.mini h1{font-size:min(21px, 2.7vh); font-size:min(21px, 2.7svh);}
     .topbar{margin-bottom:min(10px, 1.2vh); margin-bottom:min(10px, 1.2svh);}
     .progress{margin-bottom:min(14px, 1.6vh); margin-bottom:min(14px, 1.6svh);}
-    .qtitle{font-size:14px; margin-bottom:min(10px, 1.2vh); margin-bottom:min(10px, 1.2svh);}
+    .qtitle{font-size:15px; margin-bottom:min(10px, 1.2vh); margin-bottom:min(10px, 1.2svh);}
     .stmt{
       padding:min(12px, 1.5vh) 16px; padding:min(12px, 1.5svh) 16px;
       margin-bottom:min(10px, 1.3vh); margin-bottom:min(10px, 1.3svh);
       gap:min(9px, 1.1vh); gap:min(9px, 1.1svh);
     }
-    .stmt .text{font-size:15px;}
+    .stmt .text{font-size:16.5px;}
     .score-btn{padding:min(9px, 1.1vh) 0; padding:min(9px, 1.1svh) 0;}
     .nav{margin-top:min(6px, 0.7vh); margin-top:min(6px, 0.7svh);}
     .nav .btn{padding:min(13px, 1.6vh); padding:min(13px, 1.6svh);}
