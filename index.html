@@ -606,26 +606,38 @@ function escapeHtml(s){
    คงดีไซน์เดิมทุกสัดส่วน แค่ scale ลงตามพื้นที่จอที่เหลือจริง / จอคอมไม่ถูกย่อ */
 function fitToScreen(){
   const app = document.querySelector(".app");
-  // รีเซ็ตก่อนวัดขนาดจริง
-  app.style.transform = "";
-  app.style.width = "";
-  app.style.maxWidth = "";
-  app.style.height = "";
+  const reset = () => {
+    app.style.transform = ""; app.style.transformOrigin = "";
+    app.style.width = ""; app.style.maxWidth = "";
+    app.style.flexShrink = ""; app.style.height = "";
+  };
+  reset();
   const active = document.querySelector(".screen.active");
   if(window.innerWidth > 500 || !active || active.id === "screen-result") return;
 
   const cs = getComputedStyle(document.body);
   const avail = window.innerHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  // ความสูงเนื้อหา: จากขอบบนสุดของ app ถึงขอบล่างของหน้าปัจจุบัน
-  const h = active.getBoundingClientRect().bottom - app.getBoundingClientRect().top;
-  if(h > avail + 1){
-    const s = Math.max(avail / h, 0.55);
-    app.style.transformOrigin = "top center";
+  const visualH = () => active.getBoundingClientRect().bottom - app.getBoundingClientRect().top;
+  const apply = (s) => {
+    app.style.transformOrigin = "50% 0";           // ย่อจากขอบบน กึ่งกลางแนวนอน
     app.style.transform = `scale(${s})`;
-    app.style.width = (100 / s).toFixed(2) + "%";   // ชดเชยความกว้างให้เต็มจอหลังย่อ
+    app.style.width = (100 / s).toFixed(2) + "%";  // ขยายฐานความกว้างชดเชย ให้เต็มจอหลังย่อ
     app.style.maxWidth = "none";
-    app.style.height = Math.ceil(h * s) + "px";      // กันพื้นที่ว่างท้ายหน้า
+    app.style.flexShrink = "0";                    // กัน flex ของ body บีบความกว้างกลับ
+  };
+
+  // คำนวณซ้ำจนได้สเกลใหญ่ที่สุดที่ยังพอดีจอ
+  // (พอขยายฐานความกว้าง ข้อความตัดบรรทัดใหม่ ความสูงเปลี่ยน จึงต้องวัดใหม่)
+  let s = 1;
+  for(let i = 0; i < 5; i++){
+    const ratio = avail / visualH();
+    if(ratio >= 0.995 && ratio <= 1.08) break;     // สูงพอดีจอแล้ว
+    const sNew = Math.max(0.55, Math.min(1, s * ratio));
+    if(Math.abs(sNew - s) < 0.005) break;
+    s = sNew;
+    if(s >= 0.995){ reset(); s = 1; } else apply(s);
   }
+  if(s < 1) app.style.height = Math.floor(avail) + "px"; // กันสกรอลล์พื้นที่ว่างท้ายหน้า
 }
 window.addEventListener("resize", () => {
   const ae = document.activeElement;
