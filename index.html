@@ -398,6 +398,7 @@ function show(id){
   hero.style.display = (id === "screen-result") ? "none" : "";
   hero.classList.toggle("mini", id === "screen-quiz");
   window.scrollTo({top:0, behavior:"smooth"});
+  fitToScreen();
 }
 function startQuiz(){
   const name = document.getElementById("inp-name").value.trim();
@@ -446,6 +447,7 @@ function renderQ(){
     list.appendChild(div);
   });
   updateQState();
+  fitToScreen();
 }
 
 // อัปเดตเฉพาะสถานะปุ่ม/ไฮไลต์ ไม่สร้าง DOM ใหม่ — ตอบสนองไวตอนกดคะแนน
@@ -599,6 +601,40 @@ function fallbackCopy(text, done){
 function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
+
+/* ---------------- ย่อทั้งหน้าให้พอดีจอโทรศัพท์ (ทุกหน้า ยกเว้นหน้าผลลัพธ์) ----------------
+   คงดีไซน์เดิมทุกสัดส่วน แค่ scale ลงตามพื้นที่จอที่เหลือจริง / จอคอมไม่ถูกย่อ */
+function fitToScreen(){
+  const app = document.querySelector(".app");
+  // รีเซ็ตก่อนวัดขนาดจริง
+  app.style.transform = "";
+  app.style.width = "";
+  app.style.maxWidth = "";
+  app.style.height = "";
+  const active = document.querySelector(".screen.active");
+  if(window.innerWidth > 500 || !active || active.id === "screen-result") return;
+
+  const cs = getComputedStyle(document.body);
+  const avail = window.innerHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  // ความสูงเนื้อหา: จากขอบบนสุดของ app ถึงขอบล่างของหน้าปัจจุบัน
+  const h = active.getBoundingClientRect().bottom - app.getBoundingClientRect().top;
+  if(h > avail + 1){
+    const s = Math.max(avail / h, 0.55);
+    app.style.transformOrigin = "top center";
+    app.style.transform = `scale(${s})`;
+    app.style.width = (100 / s).toFixed(2) + "%";   // ชดเชยความกว้างให้เต็มจอหลังย่อ
+    app.style.maxWidth = "none";
+    app.style.height = Math.ceil(h * s) + "px";      // กันพื้นที่ว่างท้ายหน้า
+  }
+}
+window.addEventListener("resize", () => {
+  const ae = document.activeElement;
+  if(ae && ae.tagName === "INPUT") return; // คีย์บอร์ดเด้งขึ้น ไม่ต้องย่อซ้ำ
+  fitToScreen();
+});
+window.addEventListener("orientationchange", fitToScreen);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitToScreen).catch(() => {});
+fitToScreen();
 function showToast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg;
